@@ -2,7 +2,7 @@
 
 A calm, mobile-first multichain wallet explorer. Search any **wallet address, ENS name, transaction hash or token contract** and see balances, holdings and recent activity across 11 EVM networks, using only free public data and no API keys.
 
-**Live:** https://tracelight.vercel.app
+**Live:** https://tracelight-explorer.vercel.app
 
 ## What it does
 - **Smart search** that detects whether the input is an address, ENS name, tx hash, token contract, or token symbol.
