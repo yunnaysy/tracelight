@@ -26,7 +26,11 @@ export function TxDetailView({ chain, hash, perspective, onClose }: { chain: Cha
   useEffect(() => { getPrices().then(setPrices).catch(() => {}) }, [])
   const price = nativeUsd(prices, chain)
   const me = perspective?.toLowerCase()
-  const dir = !tx ? 'self' : tx.status === 'failed' ? 'fail' : me && tx.to?.toLowerCase() === me ? 'in' : me && tx.from.toLowerCase() === me ? 'out' : 'self'
+  let dir = !tx ? 'self' : tx.status === 'failed' ? 'fail' : me && tx.to?.toLowerCase() === me ? 'in' : me && tx.from.toLowerCase() === me ? 'out' : 'self'
+  if (tx && dir !== 'fail' && tx.value === 0) {
+    const t = me ? tx.transfers.find((t) => t.to.toLowerCase() === me || t.from.toLowerCase() === me) : null
+    dir = t ? (t.to.toLowerCase() === me ? 'in' : 'out') : tx.transfers.length ? 'self' : 'call'
+  }
 
   return (
     <div className="detail">

@@ -136,7 +136,7 @@ export function SearchBox({ big, autoFocus, initial = '' }: { big?: boolean; aut
   return (
     <form className={'search' + (big ? ' big' : '')} onSubmit={(e) => { e.preventDefault(); navigate(routeFor(q)) }} role="search">
       <IconSearch />
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Address, ENS, tx hash or token" spellCheck={false} autoCapitalize="off" autoComplete="off" autoFocus={autoFocus} aria-label="Search" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={typeof window !== 'undefined' && window.innerWidth < 480 ? 'Address, ENS or tx hash' : 'Address, ENS, tx hash or token'} spellCheck={false} autoCapitalize="off" autoComplete="off" autoFocus={autoFocus} aria-label="Search" />
       {kind && <span className="search-kind">{kind}</span>}
       <button type="submit" className="search-go" aria-label="Search">Go</button>
     </form>

@@ -212,3 +212,4 @@ button.row:active { transform: scale(0.99); }
   .grab { display: none; }
   .col-side .sheet-wrap + div { margin-top: 20px; }
 }
+.searchcard .chips { flex-wrap: wrap; margin: 12px 0 0; padding: 0; mask-image: none; }

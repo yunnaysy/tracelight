@@ -65,7 +65,7 @@ export function Home() {
               const failed = t.status === 'error'
               return (
                 <Row key={t.hash} active={sel === t.hash} onClick={() => setSel(t.hash)}
-                  icon={<DirIcon dir={failed ? 'fail' : v > 0 ? 'out' : 'call'} />}
+                  icon={<DirIcon dir={failed ? 'fail' : v > 0 ? 'self' : 'call'} />}
                   title={t.to?.ens_domain_name || t.to?.name || short(t.to?.hash || t.created_contract?.hash)}
                   sub={<><ChainMark chain={chainById(1)!} /> from {t.from?.ens_domain_name || short(t.from?.hash)}</>}
                   amount={v > 0 ? <>{fmtNum(v)} <span className="sym">ETH</span></> : <span className="muted-amt">{t.method ? prettyMethod(t.method) : 'Call'}</span>}
