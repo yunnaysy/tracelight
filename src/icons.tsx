@@ -1,0 +1,13 @@
+const P = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+export const IconOut = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><path d="M12 14V4" /><path d="M8 8l4-4 4 4" /><path d="M4 14v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3" /></svg>)
+export const IconIn = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><path d="M12 4v10" /><path d="M8 10l4 4 4-4" /><path d="M4 14v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3" /></svg>)
+export const IconX = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><path d="M7 7l10 10M17 7L7 17" /></svg>)
+export const IconSelf = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><path d="M4 9h13l-3-3" /><path d="M20 15H7l3 3" /></svg>)
+export const IconCall = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" /></svg>)
+export const IconBack = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P} strokeWidth={2}><path d="M15 5l-7 7 7 7" /></svg>)
+export const IconSearch = () => (<svg viewBox="0 0 24 24" width="18" height="18" {...P}><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4-4" /></svg>)
+export const IconExt = () => (<svg viewBox="0 0 24 24" width="14" height="14" {...P}><path d="M14 5h5v5" /><path d="M19 5l-8 8" /><path d="M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4" /></svg>)
+export const IconCopy = () => (<svg viewBox="0 0 24 24" width="14" height="14" {...P}><rect x="8" y="8" width="11" height="11" rx="3" /><path d="M5 15V7a2 2 0 0 1 2-2h8" /></svg>)
+export const IconGit = () => (<svg viewBox="0 0 24 24" width="18" height="18" {...P}><circle cx="6" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="8" r="2.2" /><path d="M6 8.2v7.6" /><path d="M18 10.2c0 4-6 3-11 6" /></svg>)
+export const IconPulse = () => (<svg viewBox="0 0 24 24" width="18" height="18" {...P}><path d="M3 12h4l2-5 4 10 2-5h6" /></svg>)
+export const IconCoin = () => (<svg viewBox="0 0 24 24" width="20" height="20" {...P}><circle cx="12" cy="12" r="8" /><path d="M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" /><path d="M12 8v1.5M12 15.5V17" /></svg>)
