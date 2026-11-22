@@ -41,4 +41,7 @@ npm install
 npm run dev
 ```
 
+## Owner
+Built and maintained by **Yunay**, who can be reached on X at [@madeofstardusth](https://x.com/madeofstardusth).
+
 MIT licensed.

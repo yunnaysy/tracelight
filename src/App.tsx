@@ -4,7 +4,11 @@ import { AddressPage } from './AddressPage'
 import { TxPage } from './TxPage'
 import { SearchPage } from './SearchPage'
 import { SearchBox } from './ui'
-import { IconGit } from './icons'
+import { IconXLogo } from './icons'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+
+const X_URL = 'https://x.com/madeofstardusth'
 
 export default function App() {
   const { path, search } = useLocation()
@@ -22,12 +26,48 @@ export default function App() {
           <span className="brand-dot" />tracelight
         </a>
         {path !== '/' && <div className="topsearch"><SearchBox /></div>}
-        <a className="roundbtn" href="https://github.com/yunnaysy/tracelight" target="_blank" rel="noreferrer" aria-label="Source on GitHub"><IconGit /></a>
+        <OwnerButton />
       </header>
       <main className="main">{page}</main>
       <footer className="foot">
-        Public data from Blockscout, PublicNode RPC, ENS and CoinGecko. Values are estimates, not financial advice.
+        <a className="credit" href={X_URL} target="_blank" rel="noopener noreferrer">Built by Yunay · <IconXLogo size={11} /> @madeofstardusth</a>
+        <div>Public data from Blockscout, PublicNode RPC, ENS and CoinGecko. Values are estimates, not financial advice.</div>
       </footer>
+    </div>
+  )
+}
+
+function OwnerButton() {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [open])
+  return (
+    <div className="owner">
+      <button className="ownerchip" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span className="owner-av">Y</span><span className="owner-l">Built by Yunay</span>
+      </button>
+      {open && createPortal(
+        <>
+          <div className="owner-scrim" onClick={() => setOpen(false)} />
+          <div className="owner-sheet" role="dialog" aria-label="About the owner">
+            <span className="grab only-m-grab" />
+            <div className="owner-head">
+              <span className="owner-av big">Y</span>
+              <div>
+                <div className="owner-name">Built by Yunay</div>
+                <div className="owner-handle">@madeofstardusth</div>
+              </div>
+            </div>
+            <p className="owner-p">tracelight is an independent multichain wallet explorer designed and built by Yunay. Questions, feedback or collaboration: reach out on X.</p>
+            <a className="owner-x" href={X_URL} target="_blank" rel="noopener noreferrer"><IconXLogo size={15} /> Follow @madeofstardusth</a>
+          </div>
+        </>,
+        document.body,
+      )}
     </div>
   )
 }

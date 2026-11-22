@@ -213,3 +213,28 @@ button.row:active { transform: scale(0.99); }
   .col-side .sheet-wrap + div { margin-top: 20px; }
 }
 .searchcard .chips { flex-wrap: wrap; margin: 12px 0 0; padding: 0; mask-image: none; }
+
+/* owner credit */
+.foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.credit { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border-radius: 999px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 500; transition: transform .15s; }
+.credit:hover { transform: translateY(-1px); }
+.owner { position: relative; }
+.ownerchip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 5px; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 500; box-shadow: 0 1px 2px rgba(20,26,26,.04); }
+.owner-av { width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: #fff; display: inline-grid; place-items: center; font-size: 12.5px; font-weight: 600; }
+.owner-av.big { width: 48px; height: 48px; font-size: 18px; }
+.owner-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(16,22,22,.12); }
+.owner-sheet { position: fixed; right: max(16px, calc((100vw - 1120px) / 2)); top: 62px; z-index: 61; width: 300px; background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; padding: 18px; box-shadow: 0 18px 50px rgba(20,26,26,.14); animation: fade .18s ease; }
+.owner-head { display: flex; align-items: center; gap: 12px; }
+.owner-name { font-weight: 600; font-size: 15.5px; letter-spacing: -0.01em; }
+.owner-handle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.owner-p { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 14px 0 16px; }
+.owner-x { display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 999px; background: var(--teal); color: #fff; font-weight: 600; font-size: 14px; }
+.only-m-grab { display: none; }
+@media (max-width: 520px) {
+  .owner-l { display: none; }
+  .ownerchip { padding: 0 5px; height: 44px; width: 44px; justify-content: center; }
+  .owner-av { width: 34px; height: 34px; }
+  .owner-scrim { background: rgba(16,22,22,.28); backdrop-filter: blur(3px); }
+  .owner-sheet { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; border-radius: 28px 28px 0 0; padding: 10px 20px 32px; background: #fff; animation: up .25s cubic-bezier(.2,.8,.2,1); }
+  .only-m-grab { display: block; margin-bottom: 14px; }
+}
