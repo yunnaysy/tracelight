@@ -5,6 +5,7 @@ import { TxPage } from './TxPage'
 import { SearchPage } from './SearchPage'
 import { SearchBox } from './ui'
 import { IconXLogo } from './icons'
+import { LogoMark } from './LogoMark'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -23,7 +24,8 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <a className="brand" href="/" onClick={(e) => { e.preventDefault(); navigate('/') }}>
-          <span className="brand-dot" />tracelight
+          <LogoMark size={28} className="brand-mark" />
+          <span className="brand-word">Tracelight</span>
         </a>
         {path !== '/' && <div className="topsearch"><SearchBox /></div>}
         <OwnerButton />

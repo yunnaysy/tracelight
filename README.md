@@ -1,4 +1,4 @@
-# tracelight
+# Tracelight
 
 A calm, mobile-first multichain wallet explorer. Search any **wallet address, ENS name, transaction hash or token contract** and see balances, holdings and recent activity across 11 EVM networks, using only free public data and no API keys.
 

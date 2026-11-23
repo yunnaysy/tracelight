@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Tracelight">
+  <defs>
+    <linearGradient id="tl-outer" x1="32" y1="0" x2="32" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#443D37"/>
+      <stop offset="0.5" stop-color="#322B25"/>
+      <stop offset="1" stop-color="#241F1B"/>
+    </linearGradient>
+    <linearGradient id="tl-glass" x1="32" y1="6" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6B645E"/>
+      <stop offset="0.1" stop-color="#534C46"/>
+      <stop offset="0.3" stop-color="#453E38"/>
+      <stop offset="0.65" stop-color="#362F29"/>
+      <stop offset="1" stop-color="#2C2623"/>
+    </linearGradient>
+    <linearGradient id="tl-rim" x1="32" y1="6" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.40"/>
+      <stop offset="0.15" stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="0.75" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.26"/>
+    </linearGradient>
+    <filter id="tl-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.45" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <mask id="tl-holes">
+      <rect width="64" height="64" fill="#fff"/>
+      <circle cx="12.8" cy="46" r="1.62" fill="#000"/>
+      <circle cx="30.17" cy="30.67" r="1.77" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="14.2" fill="url(#tl-outer)"/>
+  <rect x="6" y="6" width="52" height="52" rx="10.2" fill="url(#tl-glass)"/>
+  <rect x="6" y="6" width="52" height="52" rx="10.2" fill="none" stroke="url(#tl-rim)" stroke-width="0.7"/>
+  <path d="M 12.80 46.00 C 22.66 46.54 25.68 36.92 30.17 30.67 C 34.30 30.20 36.52 33.87 40.68 33.78 C 45.72 31.07 45.75 21.73 53.03 21.56" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" mask="url(#tl-holes)"/>
+  <circle cx="12.80" cy="46.00" r="2.20" stroke="#fff" stroke-width="1.2"/>
+  <circle cx="30.17" cy="30.67" r="2.35" stroke="#fff" stroke-width="1.2"/>
+  <circle cx="53.03" cy="21.56" r="1.72" fill="#fff" filter="url(#tl-glow)"/>
+</svg>
