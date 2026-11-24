@@ -5,6 +5,7 @@ import { fmtNum, fmtTime, fmtUsd, short, ago } from './format'
 import { ChainMark, Copy, DirIcon, prettyMethod } from './ui'
 import { IconExt, IconX } from './icons'
 import { navigate } from './router'
+import { t, tr } from './i18n'
 import { getPrices, nativeUsd, Prices } from './data'
 
 export function useTx(chain: Chain | null, hash: string) {
@@ -37,20 +38,20 @@ export function TxDetailView({ chain, hash, perspective, onClose }: { chain: Cha
       <div className="detail-top">
         {onClose && <button className="roundbtn sm" aria-label="Close" onClick={onClose}><IconX /></button>}
       </div>
-      {loading && <div className="detail-loading"><span className="spinner" /> Reading {chain.name} RPC…</div>}
+      {loading && <div className="detail-loading"><span className="spinner" />{tr(` Reading ${chain.name} RPC…`, ` Membaca RPC ${chain.name}…`)}</div>}
       {!loading && err && <div className="detail-err">{err}</div>}
       {tx && (
         <>
           <div className="detail-hero">
             <DirIcon dir={dir as any} />
             <Headline tx={tx} me={me} dir={dir} />
-            {price != null && tx.value > 0 && <div className="detail-usd">≈ {fmtUsd(tx.value * price)} at today's price</div>}
-            <div className={'status ' + tx.status}>{tx.status === 'success' ? 'Confirmed' : tx.status === 'failed' ? 'Failed' : 'Pending'}{tx.method ? ` · ${prettyMethod(tx.method)}` : ''}</div>
+            {price != null && tx.value > 0 && <div className="detail-usd">≈ {fmtUsd(tx.value * price)} {tr("at today's price", 'dengan harga hari ini')}</div>}
+            <div className={'status ' + tx.status}>{tx.status === 'success' ? t('Confirmed') : tx.status === 'failed' ? t('Failed') : t('Pending')}{tx.method ? ` · ${prettyMethod(tx.method)}` : ''}</div>
           </div>
 
           {tx.transfers.length > 0 && (
             <div className="card kv">
-              <div className="kv-h">Token movements</div>
+              <div className="kv-h">{t('Token movements')}</div>
               {tx.transfers.map((t, i) => (
                 <div className="kv-r" key={i}>
                   <span className="k">{short(t.from)} → {short(t.to)}</span>
@@ -61,15 +62,15 @@ export function TxDetailView({ chain, hash, perspective, onClose }: { chain: Cha
           )}
 
           <div className="card kv">
-            <KV k="Chain" v={<><ChainMark chain={chain} /> {chain.name}</>} />
+            <KV k={t('Chain')} v={<><ChainMark chain={chain} /> {chain.name}</>} />
             <KV k="Hash" v={<span className="mono">{short(tx.hash, 8)} <Copy text={tx.hash} /></span>} />
-            <KV k="From" v={<Addr a={tx.from} label={tx.fromLabel} />} />
-            <KV k="To" v={tx.to ? <Addr a={tx.to} label={tx.toLabel} /> : tx.created ? <span>Contract created <Addr a={tx.created} /></span> : '—'} />
-            <KV k="Value" v={`${fmtNum(tx.value, 8)} ${chain.symbol}`} />
-            <KV k="Network fee" v={tx.fee != null ? <>{fmtNum(tx.fee, 8)} {chain.symbol}{price != null && <span className="muted"> · {fmtUsd(tx.fee * price)}</span>}</> : '—'} />
+            <KV k={t('From')} v={<Addr a={tx.from} label={tx.fromLabel} />} />
+            <KV k={t('To')} v={tx.to ? <Addr a={tx.to} label={tx.toLabel} /> : tx.created ? <span>Contract created <Addr a={tx.created} /></span> : '—'} />
+            <KV k={t('Value')} v={`${fmtNum(tx.value, 8)} ${chain.symbol}`} />
+            <KV k={t('Network fee')} v={tx.fee != null ? <>{fmtNum(tx.fee, 8)} {chain.symbol}{price != null && <span className="muted"> · {fmtUsd(tx.fee * price)}</span>}</> : '—'} />
             {tx.gasPriceGwei != null && <KV k="Gas" v={`${tx.gasUsed?.toLocaleString('en-US')} used · ${fmtNum(tx.gasPriceGwei, 4)} gwei`} />}
-            <KV k="Block" v={tx.block != null ? tx.block.toLocaleString('en-US') : 'Pending'} />
-            <KV k="Time" v={tx.ts ? <>{fmtTime(tx.ts)} <span className="muted">· {ago(tx.ts)}</span></> : '—'} />
+            <KV k={t('Block')} v={tx.block != null ? tx.block.toLocaleString('en-US') : 'Pending'} />
+            <KV k={t('Time')} v={tx.ts ? <>{fmtTime(tx.ts)} <span className="muted">· {ago(tx.ts)}</span></> : '—'} />
             <KV k="Nonce" v={String(tx.nonce)} />
           </div>
 
@@ -85,7 +86,7 @@ export function TxDetailView({ chain, hash, perspective, onClose }: { chain: Cha
 
 function Headline({ tx, me, dir }: { tx: TxDetail; me?: string; dir: string }) {
   if (tx.value > 0 || !tx.transfers.length) {
-    if (tx.value === 0) return <div className="detail-amt">{tx.method ? prettyMethod(tx.method) : tx.created ? 'Contract creation' : 'Contract call'}</div>
+    if (tx.value === 0) return <div className="detail-amt">{tx.method ? prettyMethod(tx.method) : tx.created ? tr('Contract creation', 'Pembuatan kontrak') : tr('Contract call', 'Panggilan kontrak')}</div>
     return <div className={'detail-amt ' + dir}>{dir === 'in' ? '+ ' : dir === 'out' ? '− ' : ''}{fmtNum(tx.value, 6)} <span className="sym">{tx.chain.symbol}</span></div>
   }
   const mine = me ? tx.transfers.find((t) => t.to.toLowerCase() === me || t.from.toLowerCase() === me) : null

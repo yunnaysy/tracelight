@@ -1,4 +1,4 @@
 {
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/|assets/|favicon|apple-touch-icon|og\\.png|logo\\.svg).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api/|assets/|favicon|apple-touch-icon|og\\.png|logo\\.svg|sw\\.js|manifest\\.webmanifest).*)", "destination": "/index.html" }]
 }

@@ -5,6 +5,7 @@ import { ago, fmtNum, fmtUsd, short, fromUnits } from './format'
 import { ChainMark, DirIcon, Empty, PageHead, Row, SearchBox, Skeleton, prettyMethod } from './ui'
 import { navigate } from './router'
 import { TxDetailView } from './TxDetailView'
+import { t } from './i18n'
 
 const EXAMPLES = [
   { label: 'vitalik.eth', q: '/address/vitalik.eth' },
@@ -38,9 +39,9 @@ export function Home() {
   return (
     <div className="split">
       <section className="col-main">
-        <PageHead back={false} title="Explorer" sub="11 networks · live public data" />
+        <PageHead back={false} title="Explorer" sub={t('11 networks · live public data')} />
         <div className="card searchcard">
-          <div className="searchcard-t">Trace any wallet, transaction or token</div>
+          <div className="searchcard-t">{t('Trace any wallet, transaction or token')}</div>
           <SearchBox big />
           <div className="chips">
             {EXAMPLES.map((e) => <button key={e.label} className="chip" onClick={() => navigate(e.q)}>{e.label}</button>)}
@@ -57,7 +58,7 @@ export function Home() {
           </div>
         </div>
 
-        <div className="section-h"><h2>Latest on Ethereum</h2><span className="live"><i /> Live</span></div>
+        <div className="section-h"><h2>{t('Latest on Ethereum')}</h2><span className="live"><i /> Live</span></div>
         {txErr && !txs ? <Empty title="Feed unavailable">Blockscout's Ethereum feed didn't respond. It refreshes every 20 seconds.</Empty> : !txs ? <Skeleton rows={6} /> : (
           <div className="list">
             {txs.map((t) => {
@@ -87,7 +88,7 @@ export function Home() {
           </div>
         ) : null}
         <div className={sel ? 'only-m-hidden' : ''}>
-          <div className="section-h"><h2>Network pulse</h2><span className="muted small">RPC · every 20s</span></div>
+          <div className="section-h"><h2>{t('Network pulse')}</h2><span className="muted small">RPC · every 20s</span></div>
           {!pulse ? <Skeleton rows={6} /> : (
             <div className="list">
               {pulse.map((p) => (

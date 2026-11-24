@@ -25,4 +25,9 @@ export const CHAINS: Chain[] = [
   { id: 43114, name: 'Avalanche', short: 'AVAX', symbol: 'AVAX', color: '#D6453D', rpc: 'https://avalanche-c-chain-rpc.publicnode.com', bs: null, explorer: 'https://snowtrace.io', cg: 'avalanche-2' },
 ]
 
+/** Chains with a free keyless history source: Blockscout, or Binplorer (freekey) for BNB Chain. */
+export const hasHistory = (c: Chain) => !!c.bs || c.id === 56
+/** The five networks the watchlist polls. */
+export const WATCH_CHAIN_IDS = [1, 8453, 42161, 56, 137]
+
 export const chainById = (id: number | string) => CHAINS.find((c) => c.id === Number(id))

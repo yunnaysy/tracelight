@@ -6,6 +6,7 @@ const ALLOW = [
   /^api\.coingecko\.com$/,
   /(^|\.)publicnode\.com$/,
   /^mainnet\.era\.zksync\.io$/,
+  /^api\.binplorer\.com$/,
 ]
 
 export async function GET(request: Request) {

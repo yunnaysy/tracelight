@@ -4,6 +4,7 @@ import { Activity } from './data'
 import { fmtDate, fmtNum, short } from './format'
 import { IconBack, IconCall, IconCopy, IconIn, IconOut, IconSearch, IconSelf, IconX } from './icons'
 import { navigate } from './router'
+import { t } from './i18n'
 import { isAddr, isHash, isName } from './format'
 
 export function ChainMark({ chain, size = 14 }: { chain: Chain; size?: number }) {
@@ -67,8 +68,8 @@ export function Row({ icon, title, sub, amount, amountCls, date, onClick, active
 
 export function ActivityRow({ a, onClick, active }: { a: Activity; onClick: () => void; active?: boolean }) {
   const sign = a.dir === 'in' ? '+ ' : a.dir === 'out' ? '− ' : ''
-  const name = a.party ? a.party.label || short(a.party.hash) : a.method || 'Contract call'
-  const method = a.dir === 'fail' ? 'Failed' : a.kind === 'call' ? null : a.kind === 'token' ? 'Token' : null
+  const name = a.party ? a.party.label || short(a.party.hash) : a.method || t('Contract call')
+  const method = a.dir === 'fail' ? t('Failed') : a.kind === 'call' ? null : a.kind === 'token' ? 'Token' : null
   const amount = a.kind === 'call' && a.dir !== 'fail'
     ? <span className="muted-amt">{prettyMethod(a.method || 'call')}</span>
     : <>{sign}{fmtNum(a.amount ?? 0)} <span className="sym">{a.symbol}</span></>

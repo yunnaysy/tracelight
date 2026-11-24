@@ -8,16 +8,22 @@ import { IconXLogo } from './icons'
 import { LogoMark } from './LogoMark'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { setLang, useLang, tr } from './i18n'
+import { Toasts, WatchNav, WatchPage } from './WatchUI'
+import { startWatcher } from './watch'
 
 const X_URL = 'https://x.com/madeofstardusth'
 
 export default function App() {
   const { path, search } = useLocation()
+  const lang = useLang()
+  useEffect(() => { startWatcher() }, [])
   const params = new URLSearchParams(search)
   const seg = path.split('/').filter(Boolean).map(decodeURIComponent)
   let page: JSX.Element
   if (seg[0] === 'address' && seg[1]) page = <AddressPage key={seg[1]} q={seg[1]} />
   else if (seg[0] === 'tx' && seg[1]) page = <TxPage key={seg[1]} hash={seg[1]} chainParam={params.get('chain')} />
+  else if (seg[0] === 'watch') page = <WatchPage />
   else if (seg[0] === 'search') page = <SearchPage q={params.get('q') || ''} />
   else page = <Home />
   return (
@@ -28,12 +34,20 @@ export default function App() {
           <span className="brand-word">Tracelight</span>
         </a>
         {path !== '/' && <div className="topsearch"><SearchBox /></div>}
-        <OwnerButton />
+        <nav className="navcluster">
+          <WatchNav active={path === '/watch'} />
+          <div className="langseg" role="group" aria-label="Language">
+            <button className={lang === 'en' ? 'on' : ''} aria-pressed={lang === 'en'} onClick={() => setLang('en')}>EN</button>
+            <button className={lang === 'id' ? 'on' : ''} aria-pressed={lang === 'id'} onClick={() => setLang('id')}>ID</button>
+          </div>
+          <OwnerButton />
+        </nav>
       </header>
       <main className="main">{page}</main>
+      <Toasts />
       <footer className="foot">
         <a className="credit" href={X_URL} target="_blank" rel="noopener noreferrer">Built by Yunay · <IconXLogo size={11} /> @madeofstardusth</a>
-        <div>Public data from Blockscout, PublicNode RPC, ENS and CoinGecko. Values are estimates, not financial advice.</div>
+        <div>{tr('Public data from Blockscout, Binplorer, PublicNode RPC, ENS and CoinGecko. Values are estimates, not financial advice.', 'Data publik dari Blockscout, Binplorer, PublicNode RPC, ENS, dan CoinGecko. Nilai hanya perkiraan, bukan saran keuangan.')}</div>
       </footer>
     </div>
   )
@@ -64,7 +78,7 @@ function OwnerButton() {
                 <div className="owner-handle">@madeofstardusth</div>
               </div>
             </div>
-            <p className="owner-p">tracelight is an independent multichain wallet explorer designed and built by Yunay. Questions, feedback or collaboration: reach out on X.</p>
+            <p className="owner-p">{tr('Tracelight is an independent multichain wallet explorer designed and built by Yunay. Questions, feedback or collaboration: reach out on X.', 'Tracelight adalah explorer wallet multichain independen yang dirancang dan dibuat oleh Yunay. Pertanyaan, masukan, atau kolaborasi: hubungi lewat X.')}</p>
             <a className="owner-x" href={X_URL} target="_blank" rel="noopener noreferrer"><IconXLogo size={15} /> Follow @madeofstardusth</a>
           </div>
         </>,

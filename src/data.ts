@@ -1,7 +1,7 @@
 import { createPublicClient, http, fallback } from 'viem'
 import { mainnet } from 'viem/chains'
 import { normalize } from 'viem/ens'
-import { CHAINS, Chain, chainById } from './chains'
+import { CHAINS, Chain, chainById, hasHistory } from './chains'
 import { fromUnits } from './format'
 
 const AGG = 'https://multichain-aggregator.services.blockscout.com/api/v1/clusters/multichain'
@@ -14,7 +14,7 @@ async function raw(url: string, init?: RequestInit, ms = 9000) {
   if (r.status === 404) {
     const e: any = new Error('not found'); e.status = 404; throw e
   }
-  if (!r.ok) throw new Error(`HTTP ${r.status}`)
+  if (!r.ok) { const e: any = new Error(`HTTP ${r.status}`); e.status = r.status; throw e }
   const text = await r.text()
   if (!/^\s*[\[{]/.test(text)) throw new Error('non-JSON response')
   return JSON.parse(text)
@@ -104,12 +104,15 @@ export async function getNativeBalances(addr: string, prices?: Prices) {
   return Promise.all(
     CHAINS.map(async (c) => {
       try {
-        const b = await rpc<string>(c, 'eth_getBalance', [addr, 'latest'])
+        const [b, n] = await Promise.all([
+          rpc<string>(c, 'eth_getBalance', [addr, 'latest']),
+          rpc<string>(c, 'eth_getTransactionCount', [addr, 'latest']).catch(() => null),
+        ])
         const amount = fromUnits(BigInt(b), 18)
         const price = nativeUsd(prices, c)
-        return { chain: c, ok: true, h: { chain: c, symbol: c.symbol, name: c.symbol, amount, price, usd: price != null ? amount * price : null, native: true } as Holding }
+        return { chain: c, ok: true, nonce: n ? parseInt(n, 16) : null, h: { chain: c, symbol: c.symbol, name: c.symbol, amount, price, usd: price != null ? amount * price : null, native: true } as Holding }
       } catch {
-        return { chain: c, ok: false, h: null }
+        return { chain: c, ok: false, nonce: null, h: null }
       }
     }),
   )
@@ -174,15 +177,25 @@ export type Activity = {
 
 const party = (p: any): Party | null => (p?.hash ? { hash: p.hash, label: p.ens_domain_name || p.name || null, contract: !!p.is_contract } : null)
 
-export type ChainActivity = { chain: Chain; ok: boolean; items: Activity[]; hiddenSpam: number }
+export type ChainActivity = { chain: Chain; ok: boolean; items: Activity[]; hiddenSpam: number; limited?: boolean }
 
-export async function getChainActivity(chain: Chain, addr: string, prices?: Prices): Promise<ChainActivity> {
-  if (!chain.bs) return { chain, ok: false, items: [], hiddenSpam: 0 }
+/** Direction from the searched address's point of view. Same rule on every chain and source. */
+export function direction(me: string, from: string, to: string, failed = false): Activity['dir'] {
+  if (failed) return 'fail'
+  if (from === me && to === me) return 'self'
+  return to === me ? 'in' : 'out'
+}
+
+const isRateLimit = (e: any) => e?.status === 429 || /429|rate/i.test(String(e?.message || ''))
+
+export async function getChainActivity(chain: Chain, addr: string, prices?: Prices, ttl = 30000): Promise<ChainActivity> {
+  if (!hasHistory(chain)) return { chain, ok: false, items: [], hiddenSpam: 0 }
+  if (!chain.bs) return getBinplorerActivity(chain, addr, prices, ttl)
   const me = addr.toLowerCase()
   try {
     const [txs, tts] = await Promise.all([
-      getJSON(`${chain.bs}/api/v2/addresses/${addr}/transactions`, 30000),
-      getJSON(`${chain.bs}/api/v2/addresses/${addr}/token-transfers?type=ERC-20`, 30000).catch(() => ({ items: [] })),
+      getJSON(`${chain.bs}/api/v2/addresses/${addr}/transactions`, ttl),
+      getJSON(`${chain.bs}/api/v2/addresses/${addr}/token-transfers?type=ERC-20`, ttl).catch(() => ({ items: [] })),
     ])
     const items: Activity[] = []
     let hiddenSpam = 0
@@ -196,7 +209,7 @@ export async function getChainActivity(chain: Chain, addr: string, prices?: Pric
       if (scam || price == null || amount === 0) { hiddenSpam++; continue }
       const hash = t.transaction_hash || t.tx_hash
       const from = (t.from?.hash || '').toLowerCase(), to = (t.to?.hash || '').toLowerCase()
-      const dir = from === me && to === me ? 'self' : to === me ? 'in' : 'out'
+      const dir = direction(me, from, to)
       tokenHashes.add(hash)
       items.push({
         id: `${chain.id}:${hash}:${t.log_index}`, chain, hash, ts: t.timestamp,
@@ -209,7 +222,7 @@ export async function getChainActivity(chain: Chain, addr: string, prices?: Pric
       const failed = x.status === 'error' || (x.result && x.result !== 'success' && x.result !== 'pending')
       const value = fromUnits(x.value, 18)
       if (!failed && value === 0 && tokenHashes.has(x.hash)) continue
-      const dir = failed ? 'fail' : from === me && to === me ? 'self' : to === me ? 'in' : 'out'
+      const dir = direction(me, from, to, !!failed)
       const price = nativeUsd(prices, chain)
       items.push({
         id: `${chain.id}:${x.hash}`, chain, hash: x.hash, ts: x.timestamp,
@@ -219,9 +232,67 @@ export async function getChainActivity(chain: Chain, addr: string, prices?: Pric
       })
     }
     return { chain, ok: true, items, hiddenSpam }
-  } catch {
-    return { chain, ok: false, items: [], hiddenSpam: 0 }
+  } catch (e) {
+    return { chain, ok: false, items: [], hiddenSpam: 0, limited: isRateLimit(e) }
   }
+}
+
+/**
+ * BNB Chain history from Binplorer (Ethplorer for BSC) using its public `freekey`.
+ * Native BNB transfers (including failed ones) + BEP-20 transfers. Free, no signup.
+ */
+const BINPLORER = 'https://api.binplorer.com'
+async function getBinplorerActivity(chain: Chain, addr: string, prices?: Prices, ttl = 30000): Promise<ChainActivity> {
+  const me = addr.toLowerCase()
+  try {
+    const [txs, ops] = await Promise.all([
+      getJSON(`${BINPLORER}/getAddressTransactions/${me}?apiKey=freekey&limit=50&showZeroValues=1`, ttl),
+      getJSON(`${BINPLORER}/getAddressHistory/${me}?apiKey=freekey&limit=50&type=transfer`, ttl).catch(() => ({ operations: [] })),
+    ])
+    if (!Array.isArray(txs) && txs?.error) throw Object.assign(new Error(txs.error.message || 'binplorer'), { status: txs.error.code === 429 ? 429 : 0 })
+    const items: Activity[] = []
+    let hiddenSpam = 0
+    const tokenHashes = new Set<string>()
+    for (const o of ops?.operations || []) {
+      const tok = o.tokenInfo || {}
+      const price = tok.price && tok.price.rate != null ? Number(tok.price.rate) : null
+      const mcap = tok.price ? Number(tok.price.marketCapUsd || 0) : 0
+      const dec = Number(tok.decimals ?? 18), rawV = String(o.value ?? '0')
+      const amount = /^\d+$/.test(rawV) ? fromUnits(rawV, dec) : Number(rawV) / 10 ** dec
+      if (price == null || mcap < 1e5 || amount === 0) { hiddenSpam++; continue }
+      const from = (o.from || '').toLowerCase(), to = (o.to || '').toLowerCase()
+      const dir = direction(me, from, to)
+      tokenHashes.add(o.transactionHash)
+      items.push({
+        id: `${chain.id}:${o.transactionHash}:${from}:${to}:${tok.address}`, chain, hash: o.transactionHash, ts: new Date(o.timestamp * 1000).toISOString(),
+        dir, party: { hash: dir === 'in' ? from : to, label: null }, amount, symbol: tok.symbol || 'TOKEN', usd: amount * price, method: null, kind: 'token',
+      })
+    }
+    const price = nativeUsd(prices, chain)
+    for (const x of Array.isArray(txs) ? txs : []) {
+      const from = (x.from || '').toLowerCase(), to = (x.to || '').toLowerCase()
+      const failed = x.success === false
+      const value = Number(x.value) || 0
+      if (!failed && value === 0 && tokenHashes.has(x.hash)) continue
+      const dir = direction(me, from, to, failed)
+      items.push({
+        id: `${chain.id}:${x.hash}`, chain, hash: x.hash, ts: new Date(x.timestamp * 1000).toISOString(),
+        dir, party: { hash: to === me ? from : to, label: null }, amount: value, symbol: chain.symbol,
+        usd: price != null ? value * price : null, method: null, kind: value === 0 ? 'call' : 'native',
+      })
+    }
+    return { chain, ok: true, items, hiddenSpam }
+  } catch (e) {
+    return { chain, ok: false, items: [], hiddenSpam: 0, limited: isRateLimit(e) }
+  }
+}
+
+/** Cheap RPC fingerprint (nonce + balance) used by the watchlist when an indexer is unreachable. */
+export async function rpcFingerprint(chain: Chain, addr: string): Promise<string | null> {
+  try {
+    const [n, b] = await Promise.all([rpc<string>(chain, 'eth_getTransactionCount', [addr, 'latest']), rpc<string>(chain, 'eth_getBalance', [addr, 'latest'])])
+    return `${parseInt(n, 16)}:${BigInt(b).toString()}`
+  } catch { return null }
 }
 
 /* ---------------- home: latest transactions on a chain ---------------- */
