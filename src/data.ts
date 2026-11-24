@@ -43,7 +43,8 @@ export function getJSON(url: string, ttl = 20000, proxyFirst = false): Promise<a
 let rpcId = 1
 export async function rpc<T = any>(chain: Chain, method: string, params: any[] = []): Promise<T> {
   const body = JSON.stringify({ jsonrpc: '2.0', id: rpcId++, method, params })
-  const init = { method: 'POST', headers: { 'content-type': 'application/json' }, body }
+  // text/plain keeps this a CORS "simple request": no preflight, half the requests to free RPCs
+  const init = { method: 'POST', headers: { 'content-type': 'text/plain' }, body }
   let j: any
   try { j = await raw(chain.rpc, init, 8000) } catch { j = await raw(proxied(chain.rpc), init, 10000) }
   if (j.error) throw new Error(j.error.message || 'rpc error')
@@ -53,7 +54,8 @@ export async function rpc<T = any>(chain: Chain, method: string, params: any[] =
 /** Several calls in one JSON-RPC batch request: one HTTP request instead of many, gentler on free RPC limits. */
 export async function rpcBatch(chain: Chain, calls: [string, any[]][]): Promise<any[]> {
   const body = JSON.stringify(calls.map(([method, params], i) => ({ jsonrpc: '2.0', id: i + 1, method, params })))
-  const init = { method: 'POST', headers: { 'content-type': 'application/json' }, body }
+  // text/plain keeps this a CORS "simple request": no preflight, half the requests to free RPCs
+  const init = { method: 'POST', headers: { 'content-type': 'text/plain' }, body }
   let j: any
   try { j = await raw(chain.rpc, init, 8000) } catch { j = await raw(proxied(chain.rpc), init, 10000) }
   if (!Array.isArray(j)) throw new Error(j?.error?.message || 'batch not supported')
