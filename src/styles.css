@@ -257,7 +257,7 @@ button.row:active { transform: scale(0.99); }
 .navpill-n { font-size: 11.5px; color: var(--muted); }
 .navpill.on .navpill-n { color: rgba(255, 255, 255, .6); }
 .badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--green); color: #fff; font-size: 10.5px; font-weight: 600; display: inline-grid; place-items: center; line-height: 1; }
-.badge.inline { margin-left: 8px; vertical-align: 1px; height: 18px; padding: 0 7px; font-size: 10.5px; }
+.badge.inline { height: 20px; padding: 0 8px; font-size: 11px; }
 .langseg { display: inline-flex; padding: 3px; border-radius: 999px; height: 40px; align-items: center; }
 .langseg button { height: 34px; min-width: 34px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
 .langseg button.on { background: var(--ink-2); color: #fff; }

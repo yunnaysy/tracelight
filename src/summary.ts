@@ -22,6 +22,8 @@ const STABLES = /^(USDC|USDT|DAI|USDE|FDUSD|USDS|PYUSD|TUSD|BUSD|USDC\.E|USDBC|L
 const SWAP = /swap|exactinput|exactoutput|multicall|execute|fillorder|unoswap|aggregate/i
 const BRIDGE = /bridge|portal|stargate|across|hop |layerzero|wormhole|depositeth|outboundtransfer|relay/i
 
+const approx = (v: number) => (Math.abs(v) >= 1e6 ? fmtUsd(v, true) : Math.abs(v) >= 100 ? '$' + Math.round(v).toLocaleString('en-US') : fmtUsd(v))
+
 const list = (xs: string[]) => {
   if (xs.length <= 1) return xs.join('')
   const and = tr(' and ', ' dan ')
@@ -77,8 +79,8 @@ export function buildSummary(x: SummaryInput): Summary {
   if (x.total >= 1 && topTokens.length) {
     const share = Math.round((topTokens[0][1] / x.total) * 100)
     headline += tr(
-      ` Holds about ${fmtUsd(x.total, true)}, ${share >= 50 ? 'mostly' : 'led by'} ${topTokens[0][0]}${share < 99 ? ` (${share}%)` : ''}.`,
-      ` Menyimpan sekitar ${fmtUsd(x.total, true)}, ${share >= 50 ? 'sebagian besar' : 'terbanyak'} ${topTokens[0][0]}${share < 99 ? ` (${share}%)` : ''}.`,
+      ` Holds about ${approx(x.total)}, ${share >= 50 ? 'mostly' : 'led by'} ${topTokens[0][0]}${share < 99 ? ` (${share}%)` : ''}.`,
+      ` Menyimpan sekitar ${approx(x.total)}, ${share >= 50 ? 'sebagian besar' : 'terbanyak'} ${topTokens[0][0]}${share < 99 ? ` (${share}%)` : ''}.`,
     )
   } else if (x.total < 1) headline += tr(' Balance is close to zero.', ' Saldonya hampir nol.')
 
@@ -91,7 +93,7 @@ export function buildSummary(x: SummaryInput): Summary {
   if (first && last && first !== last) facts.push({ k: tr('Loaded range', 'Rentang data'), v: `${fmtDate(first)} – ${fmtDate(last)}` })
   if (usdIn > 0 || usdOut > 0) {
     const net = usdIn - usdOut
-    facts.push({ k: tr('Net flow', 'Arus bersih'), v: `${net >= 0 ? '+' : '−'}${fmtUsd(Math.abs(net), true)} (${tr('in', 'masuk')} ${fmtUsd(usdIn, true)} · ${tr('out', 'keluar')} ${fmtUsd(usdOut, true)})`, tone: net >= 0 ? 'in' : 'out' })
+    facts.push({ k: tr('Net flow', 'Arus bersih'), v: `${net >= 0 ? '+' : '−'}${approx(Math.abs(net))} (${tr('in', 'masuk')} ${approx(usdIn)} · ${tr('out', 'keluar')} ${approx(usdOut)})`, tone: net >= 0 ? 'in' : 'out' })
   }
   if (topTokens.length) facts.push({ k: tr('Top tokens', 'Token utama'), v: topTokens.map(([s, v]) => `${s} ${Math.round((v / Math.max(x.total, 1e-9)) * 100)}%`).join(' · ') })
   if (nonceChains.length) facts.push({ k: tr('Has sent on', 'Pernah kirim di'), v: tr(`${nonceChains.length} network${nonceChains.length === 1 ? '' : 's'}`, `${nonceChains.length} jaringan`) + ` · ${nonceChains.slice(0, 4).join(', ')}${nonceChains.length > 4 ? '…' : ''}` })

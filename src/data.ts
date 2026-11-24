@@ -50,6 +50,21 @@ export async function rpc<T = any>(chain: Chain, method: string, params: any[] =
   return j.result as T
 }
 
+/** Several calls in one JSON-RPC batch request: one HTTP request instead of many, gentler on free RPC limits. */
+export async function rpcBatch(chain: Chain, calls: [string, any[]][]): Promise<any[]> {
+  const body = JSON.stringify(calls.map(([method, params], i) => ({ jsonrpc: '2.0', id: i + 1, method, params })))
+  const init = { method: 'POST', headers: { 'content-type': 'application/json' }, body }
+  let j: any
+  try { j = await raw(chain.rpc, init, 8000) } catch { j = await raw(proxied(chain.rpc), init, 10000) }
+  if (!Array.isArray(j)) throw new Error(j?.error?.message || 'batch not supported')
+  const byId = new Map(j.map((r: any) => [r.id, r]))
+  return calls.map((_, i) => {
+    const r: any = byId.get(i + 1)
+    if (!r || r.error) throw new Error(r?.error?.message || 'rpc error')
+    return r.result
+  })
+}
+
 export const ens = createPublicClient({
   chain: mainnet,
   transport: fallback([http('https://ethereum-rpc.publicnode.com'), http('https://eth.llamarpc.com')]),
@@ -80,7 +95,7 @@ export const nativeUsd = (p: Prices | undefined, c: Chain) => p?.[c.cg]?.usd ?? 
 export type Pulse = { chain: Chain; block?: number; gasGwei?: number; ts?: number; ok: boolean }
 export async function getPulse(chain: Chain): Promise<Pulse> {
   try {
-    const [bn, gp] = await Promise.all([rpc<string>(chain, 'eth_blockNumber'), rpc<string>(chain, 'eth_gasPrice')])
+    const [bn, gp] = await rpcBatch(chain, [['eth_blockNumber', []], ['eth_gasPrice', []]])
     return { chain, block: parseInt(bn, 16), gasGwei: Number(BigInt(gp)) / 1e9, ok: true, ts: Date.now() }
   } catch {
     return { chain, ok: false }
@@ -104,10 +119,7 @@ export async function getNativeBalances(addr: string, prices?: Prices) {
   return Promise.all(
     CHAINS.map(async (c) => {
       try {
-        const [b, n] = await Promise.all([
-          rpc<string>(c, 'eth_getBalance', [addr, 'latest']),
-          rpc<string>(c, 'eth_getTransactionCount', [addr, 'latest']).catch(() => null),
-        ])
+        const [b, n] = await rpcBatch(c, [['eth_getBalance', [addr, 'latest']], ['eth_getTransactionCount', [addr, 'latest']]])
         const amount = fromUnits(BigInt(b), 18)
         const price = nativeUsd(prices, c)
         return { chain: c, ok: true, nonce: n ? parseInt(n, 16) : null, h: { chain: c, symbol: c.symbol, name: c.symbol, amount, price, usd: price != null ? amount * price : null, native: true } as Holding }
@@ -290,7 +302,7 @@ async function getBinplorerActivity(chain: Chain, addr: string, prices?: Prices,
 /** Cheap RPC fingerprint (nonce + balance) used by the watchlist when an indexer is unreachable. */
 export async function rpcFingerprint(chain: Chain, addr: string): Promise<string | null> {
   try {
-    const [n, b] = await Promise.all([rpc<string>(chain, 'eth_getTransactionCount', [addr, 'latest']), rpc<string>(chain, 'eth_getBalance', [addr, 'latest'])])
+    const [n, b] = await rpcBatch(chain, [['eth_getTransactionCount', [addr, 'latest']], ['eth_getBalance', [addr, 'latest']]])
     return `${parseInt(n, 16)}:${BigInt(b).toString()}`
   } catch { return null }
 }

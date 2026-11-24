@@ -105,12 +105,12 @@ function WatchRow({ w }: { w: Watched }) {
       <button className="watchrow-main" onClick={() => { markSeen(w.addr); navigate(`/address/${w.addr}`) }}>
         <DirIcon dir={w.last ? (w.last.kind === 'call' && w.last.dir !== 'fail' ? 'call' : w.last.dir) : 'self'} />
         <span className="row-mid">
-          <span className="row-title">{w.name || short(w.addr, 4)}{w.unseen > 0 && <span className="badge inline">{w.unseen} {tr('new', 'baru')}</span>}</span>
+          <span className="row-title">{w.name || short(w.addr, 4)}</span>
           <span className="row-sub">{lastTxt}</span>
         </span>
         <span className="row-right">
-          <span className="row-date">{w.last ? ago(w.last.ts) : ''}</span>
-          <span className="row-date">{w.checked ? tr(`checked ${ago(w.checked)}`, `dicek ${ago(w.checked)}`) : ''}</span>
+          {w.unseen > 0 ? <span className="badge inline">{w.unseen} {tr('new', 'baru')}</span> : <span className="row-date">{w.last ? ago(w.last.ts) : ''}</span>}
+          <span className="row-date" title={w.checked ? tr(`checked ${ago(w.checked)}`, `dicek ${ago(w.checked)}`) : ''}>{w.unseen > 0 && w.last ? ago(w.last.ts) : ''}</span>
         </span>
       </button>
       <button className="roundbtn sm ghostbtn" aria-label={tr('Remove', 'Hapus')} onClick={() => removeWatch(w.addr)}><IconTrash /></button>
